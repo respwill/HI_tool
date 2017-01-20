@@ -12,7 +12,7 @@ def compare(emes_df,ces_df):
     else:
         return emes_df + " change it to " + str(ces_df)
 
-def elCompare(emes_df,ces_df):
+def fgCompare(emes_df,ces_df):
     if len(str(ces_df)) == 10:
         if str(emes_df)[1:11] == str(ces_df):
             return "OK"
