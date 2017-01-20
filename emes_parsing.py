@@ -1,16 +1,30 @@
 #Job 8:7
 #Though your beginning was small, yet your latter end would greatly increase.
 
+import sys
+sys.path.append("D:\Python")
+
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium import webdriver
+from HI_tool import emes_login
 
 class parser():
     # function for initializing.
-    def parser(self,lot_list,driver,emes_df,result_df):
+    def parser(self, lot_list, emes_df, result_df):
+        # set driver
+        self.driver = webdriver.PhantomJS()
+
+        # create 'access' instance to log in to EMES.
+        login = emes_login.access(self.driver)
+        login.connecting()
+
         self.lot_list = lot_list
-        self.driver = driver
         self.emes_df = emes_df
         self.result_df = result_df
+
+    def quit_driver(self):
+        self.driver.quit()
 
     # script for pin tracking / crawling fg number and marking spec number.
     def fg_info_gathering(self,driver, pin):
@@ -107,7 +121,7 @@ class parser():
         self.driver.switch_to.window(self.driver.window_handles[0])
 
     # get list of items that user want to inpect as parameter and return emes information to emes_df and result_df.
-    def run(self,inspect_item_list):
+    def get_info(self,inspect_item_list):
         for target_lot in self.lot_list:
             self.collecting(target_lot)
             info_dic = {'assy_device':self.assy_device, 'test_device':self.test_device, 'ship_code':self.ship_code,'drop_flag':self.drop_flag,
