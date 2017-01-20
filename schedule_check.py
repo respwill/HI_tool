@@ -10,7 +10,7 @@ import os
 class sch_check(emes_parsing.parser):
     # set data frame initially: excel information and column names
     #lot_column, device_column, po_column, datecode_column, tracecode_column, coo_column, el_fg_column, be_fg_column, ship_column
-    def __init__(self, book, sheet, lot_column, device_column, po_column, datecode_column="optional", tracecode_column="optional", coo_column="optional", ship_column="optional",
+    def __init__(self, book, sheet, lot_column, device_column, po_column="optional", datecode_column="optional", tracecode_column="optional", coo_column="optional", ship_column="optional",
                  el_fg_column="optional", pre_split_fg_column="optional", be_fg_column="optional", marking_spec_column="optional"):
         # set excel information include column names.
         self.current_dir = os.getcwd()
@@ -63,7 +63,10 @@ class sch_check(emes_parsing.parser):
                 continue
             else:
                 self.target_lots.append(str(self.CES_df[self.lot_column].loc[n]))
-                CES_read.sch_db_input(cust_code, self.CES_df[self.lot_column].loc[n], self.CES_df[pdl_column].loc[n], self.CES_df[quantity_column].loc[n], self.CES_df[self.el_fg_column].loc[n])
+                if pdl_column == "wafer":
+                    CES_read.sch_db_input(cust_code, self.CES_df[self.lot_column].loc[n], "WP", self.CES_df[quantity_column].loc[n], self.CES_df[self.el_fg_column].loc[n])
+                else:
+                    CES_read.sch_db_input(cust_code, self.CES_df[self.lot_column].loc[n], self.CES_df[pdl_column].loc[n], self.CES_df[quantity_column].loc[n], self.CES_df[self.el_fg_column].loc[n])
 
     # Compare emes and target excel file.
     def comparing(self,type):
@@ -83,7 +86,10 @@ class sch_check(emes_parsing.parser):
                 elif check_column_name.find("coo") != -1:
                     self.result_df[column_name][n] = CES_read.cooCompare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
                 elif check_column_name.find("po") != -1:
-                    self.result_df[column_name][n] = CES_read.compare(emes_df=self.EMES_df[column_name][n], ces_df=int(self.CES_df[column_name][n]))
+                    try:
+                        self.result_df[column_name][n] = CES_read.compare(emes_df=self.EMES_df[column_name][n], ces_df=int(self.CES_df[column_name][n]))
+                    except:
+                        self.result_df[column_name][n] = CES_read.compare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
                 elif check_column_name.find("device") != -1:
                     pass
                 elif check_column_name.find("lot") != -1:

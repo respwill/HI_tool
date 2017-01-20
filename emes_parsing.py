@@ -55,15 +55,15 @@ class parser():
     def collecting(self,target_lot):
         self.tracking_lot(target_lot)
         #in case of wrong lot number is used.
-        try:
-            WebDriverWait(self.driver, 3).until(EC.alert_is_present())
-            alert = self.driver.switch_to_alert()
-            alert.accept()
-            print(str(self.target_lotNumber)+" / "+str(self.target_DccNumber),"doesn't exist")
-            self.ship_code, self.drop_flag, self.test_PO, self.custInfo, self.dateCode, self.coo, self.traceCode, self.scheduleType, self.testFloor = ("wrong lot#")*9
-            return
-        except:
-            pass
+
+        # if EC.alert_is_present:
+        #
+        #     self.driver.execute_script("window.confirm = function(msg) { return true; }")
+        #     print(str(self.target_lotNumber)+" / "+str(self.target_DccNumber),"doesn't exist")
+        #     self.ship_code, self.drop_flag, self.test_PO, self.custInfo, self.dateCode, self.coo, self.traceCode, self.scheduleType, self.testFloor = ("wrong lot#")*9
+        #     return 0
+        # else:
+        #     pass
 
         print("Checking: ", self.target_lotNumber, self.target_DccNumber)
 
@@ -88,7 +88,13 @@ class parser():
         # It will show 2nd window. move to the 2nd window and get pin number.
         pin_list = self.driver.find_element_by_partial_link_text("Sub Pin Info")
         pin_list.click()
-        self.driver.switch_to.window(self.driver.window_handles[1])
+        try:
+            self.driver.switch_to.window(self.driver.window_handles[1])
+        except:
+            self.ship_code = self.drop_flag = self.test_PO = self.custInfo = self.dateCode = self.coo = self.traceCode = self.scheduleType = self.testFloor = "wrong lot#"
+            print(str(self.target_lotNumber) + " / " + str(self.target_DccNumber), "doesn't exist")
+            return
+
         self.current_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[6].text
         # self.previous_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[8]
         self.pre_split_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[10].text
