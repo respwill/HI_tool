@@ -64,6 +64,12 @@ class parser():
 
         self.tracking_url = "http://aak1ws01/eMES/sch/historyTestInfo.do?factoryID=1&Lot=" + str(self.target_lotNumber) + "&Dcc=" + str(self.target_DccNumber) + "&dest=TEST"
         self.driver.get(self.tracking_url)
+
+
+
+    # tracking each lot number and crawling information from it.
+    def collecting(self,target_lot):
+        self.tracking_lot(target_lot)
         try:
             alert = self.driver.switch_to.alert
             print(alert.text)
@@ -81,10 +87,6 @@ class parser():
         else:
             pass
 
-
-    # tracking each lot number and crawling information from it.
-    def collecting(self,target_lot):
-        self.tracking_lot(target_lot)
         if self.target_DccNumber != "":
             print("Checking: ", self.target_lotNumber+" / "+self.target_DccNumber)
         else:
