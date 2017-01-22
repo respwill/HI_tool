@@ -7,39 +7,42 @@ import pandas as pd
 from HI_tool import CES_read, emes_parsing
 import os
 
-class sch_check(emes_parsing.parser):
+class sch_check(emes_parsing.parser, CES_read.CES_reader):
     # set data frame initially: excel information and column names
     #lot_column, device_column, po_column, datecode_column, tracecode_column, coo_column, el_fg_column, be_fg_column, ship_column
-    def __init__(self, book, sheet, lot_column, device_column, po_column="optional", datecode_column="optional", tracecode_column="optional", coo_column="optional", ship_column="optional",
-                 el_fg_column="optional", pre_split_fg_column="optional", be_fg_column="optional", marking_spec_column="optional"):
+    def __init__(self, book, sheet, lot_column, dcc_column="no dcc", device_column="optional",  po_column="optional", datecode_column="optional",custInfo_column="optional",
+                 tracecode_column="optional", coo_column="optional", ship_column="optional", current_fg_column="optional", pre_split_fg_column="optional",
+                 tstock_fg_column="optional", marking_spec_column="optional"):
         # set excel information include column names.
         self.current_dir = os.getcwd()
         self.book = book
         self.sheet = sheet
         self.lot_column = lot_column
+        self.dcc_column = dcc_column
         self.device_column = device_column
         self.po_column = po_column
         self.datecode_column = datecode_column
+        self.custInfo_column = custInfo_column
         self.tracecode_column = tracecode_column
         self.coo_column = coo_column
-        self.el_fg_column = el_fg_column
+        self.current_fg_column = current_fg_column
         self.pre_split_fg_column = pre_split_fg_column
-        self.be_fg_column = be_fg_column
+        self.tstock_fg_column = tstock_fg_column
         self.ship_column = ship_column
         self.marking_spec_column = marking_spec_column
 
         # procedure for set columns list for DataFrame.
         # If input is blank, it will be ignored.
         collection = []
-        collection = lot_column, device_column, po_column, datecode_column, tracecode_column, coo_column, ship_column, el_fg_column, pre_split_fg_column, be_fg_column, marking_spec_column
+        collection = lot_column, dcc_column, device_column, po_column, datecode_column, custInfo_column, tracecode_column, coo_column, ship_column, current_fg_column, pre_split_fg_column, tstock_fg_column, marking_spec_column
         self.sorted_collection = []
         for column in collection:
-            if column == "optional":
+            if column == "optional" or column == "no dcc":
                 pass
             else:
                 self.sorted_collection.append(column)
 
-        # creating Dataframe using information that we got above.
+        # creating Dataframe using information that we got above / igonore column that has 'optional'
         self.EMES_df = pd.DataFrame(columns=self.sorted_collection)
         self.result_df = pd.DataFrame(columns=self.sorted_collection)
 
@@ -49,24 +52,82 @@ class sch_check(emes_parsing.parser):
         # make target lot number list.
         self.target_lots = []
 
-    # collecting target lot number and append to data frame and data base..
-    def set_target(self, cust_code, pdl_column, quantity_column):
-        # collecting target lot number from BE scheduling sheet which index is 'Row'
-        self.CES_df = self.CES_df.loc["Row"]
-        # set index as number from 0 to data frame length size.
-        self.CES_df.index = range(len(self.CES_df))
-        # ignoring blank, field column and get target lot numbers
-        for n in range(0, len(self.CES_df[self.lot_column])):
-            if pd.isnull(self.CES_df[self.lot_column].loc[n]):
-                continue
-            elif self.CES_df[self.lot_column].loc[n] == self.lot_column:
-                continue
+    # collecting target lot number from CES file and append to data frame and data base..
+    # ces_df's information is right one.
+    def compare(self, emes_df, ces_df):
+        if emes_df == str(ces_df):
+            return "OK"
+        elif emes_df == "" or emes_df == "/":
+            return "No lot"
+        else:
+            return emes_df + " change it to " + str(ces_df)
+
+    def fgCompare(self, emes_df, ces_df):
+        if len(str(ces_df)) == 10:
+            if str(emes_df)[1:11] == str(ces_df):
+                return "OK"
+            elif emes_df == "wrong lot#":
+                return "wrong lot#"
             else:
-                self.target_lots.append(str(self.CES_df[self.lot_column].loc[n]))
-                if pdl_column == "wafer":
-                    CES_read.sch_db_input(cust_code, self.CES_df[self.lot_column].loc[n], "WP", self.CES_df[quantity_column].loc[n], self.CES_df[self.el_fg_column].loc[n])
-                else:
-                    CES_read.sch_db_input(cust_code, self.CES_df[self.lot_column].loc[n], self.CES_df[pdl_column].loc[n], self.CES_df[quantity_column].loc[n], self.CES_df[self.el_fg_column].loc[n])
+                return str(emes_df)[1:11] + " change it to " + str(ces_df)
+        else:
+            if str(emes_df)[1:11] == str(ces_df)[0:10]:
+                return "OK"
+            elif emes_df == "wrong lot#":
+                return "wrong lot#"
+            else:
+                return str(emes_df)[1:11] + " change it to " + str(ces_df)[0:10]
+
+    def markCompare(self, emes_df, ces_df):
+        if emes_df == str(ces_df):
+            return "OK"
+        elif str(ces_df) == "No marking":
+            if emes_df == "":
+                return "OK"
+            else:
+                return "incorrect FG:"
+        else:
+            return "incorrect FG"
+
+    def cooCompare(self, emes_df, ces_df):
+        if ces_df == "PH":
+            if emes_df == "D(PHILIPPINE)":
+                return "OK"
+            else:
+                return "incorrect coo"
+        elif ces_df == "TW":
+            if emes_df == "G(TAIWAN )":
+                return "OK"
+            else:
+                return "incorrect coo"
+        else:
+            return "Please revise cooCompare in CES_read.py"
+
+    def shipCompare(self, emes_df, ces_df):
+        # devider in emes is '-'
+        if ces_df.find("/") != -1:
+            checker = ces_df.find("/")
+        elif ces_df.find("-") != -1:
+            checker = ces_df.find("-")
+        else:
+            print("please use '/' or '-' to divide country code and local code in shipping code in CES file")
+
+        if str(ces_df)[:1] == "0":
+            if str(emes_df) == str(ces_df)[1:checker] + "-" + str(ces_df)[checker + 1:checker + 2]:
+                return "OK"
+            elif emes_df == "wrong lot#":
+                return "wrong lot#"
+            else:
+                return str(emes_df) + " change it to " + str(ces_df)[1:checker] + "-" + str(ces_df)[
+                                                                                        checker + 1:checker + 2]
+        else:
+            if str(emes_df) == str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:checker + 2]:
+                return "OK"
+            elif emes_df == "wrong lot#":
+                return "wrong lot#"
+            else:
+                return str(emes_df) + " change it to " + str(ces_df)[:checker] + "-" + str(ces_df)[
+                                                                                       checker + 1:checker + 2]
 
     # Compare emes and target excel file.
     def comparing(self,type):
@@ -80,22 +141,22 @@ class sch_check(emes_parsing.parser):
                 # it will normalize field names.
                 check_column_name = column_name.lower()
                 if check_column_name.find("fg") != -1:
-                    self.result_df[column_name][n] = CES_read.fgCompare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
+                    self.result_df[column_name][n] = self.fgCompare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
                 elif check_column_name.find("ship") != -1:
-                    self.result_df[column_name][n] = CES_read.shipCompare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n], devide_char='-')
+                    self.result_df[column_name][n] = self.shipCompare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
                 elif check_column_name.find("coo") != -1:
-                    self.result_df[column_name][n] = CES_read.cooCompare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
+                    self.result_df[column_name][n] = self.cooCompare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
                 elif check_column_name.find("po") != -1:
                     try:
-                        self.result_df[column_name][n] = CES_read.compare(emes_df=self.EMES_df[column_name][n], ces_df=int(self.CES_df[column_name][n]))
+                        self.result_df[column_name][n] = self.compare(emes_df=self.EMES_df[column_name][n], ces_df=int(self.CES_df[column_name][n]))
                     except:
-                        self.result_df[column_name][n] = CES_read.compare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
+                        self.result_df[column_name][n] = self.compare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
                 elif check_column_name.find("device") != -1:
                     pass
                 elif check_column_name.find("lot") != -1:
                     pass
                 else:
-                    self.result_df[column_name][n] = CES_read.compare(emes_df=self.EMES_df[column_name][n], ces_df=(self.CES_df[column_name][n]))
+                    self.result_df[column_name][n] = self.compare(emes_df=self.EMES_df[column_name][n], ces_df=(self.CES_df[column_name][n]))
 
         if not "inspection result" in os.listdir(self.current_dir):
             os.mkdir("inspection result")
