@@ -58,7 +58,9 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
         if emes_df == str(ces_df):
             return "OK"
         elif emes_df == "" or emes_df == "/":
-            return "No lot"
+            return ""
+        elif emes_df == "wrong lot#":
+            return "wrong lot#"
         else:
             return emes_df + " change it to " + str(ces_df)
 
@@ -164,7 +166,7 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
         writer = pd.ExcelWriter("{}/inspection result/{} insp_result.xlsx".format(self.current_dir,type), engine="xlsxwriter")
         self.result_df.to_excel(writer, sheet_name=self.sheet)
         writer.close()
-        print("\nChecking for {} has done".format(type))
+        print("Checking for {} has done\n".format(type))
 
 
 
