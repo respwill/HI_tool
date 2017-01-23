@@ -155,7 +155,9 @@ class parser():
                         'schedule_type':self.scheduleType, 'test_floor':self.testFloor,
                         'current_fg':self.current_fg, 'pre_split_fg':self.pre_split_fg, 't_stock_fg':self.t_stock_fg, 'current_fg_marking':self.current_fg_marking}
             collected_info = []
-            collected_info.append(target_lot)
+            collected_info.append(self.target_lotNumber)
+            if self.dcc_column != "no dcc":
+                collected_info.append(self.target_DccNumber)
             for info in inspect_item_list:
                  collected_info.append(info_dic[info])
             self.emes_df.loc[len(self.emes_df)] = collected_info
