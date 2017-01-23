@@ -3,10 +3,6 @@
 
 import sys
 sys.path.append("D:\Python")
-import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.alert import Alert
 from selenium import webdriver
 from HI_tool import emes_login
 
@@ -155,9 +151,13 @@ class parser():
                         'schedule_type':self.scheduleType, 'test_floor':self.testFloor,
                         'current_fg':self.current_fg, 'pre_split_fg':self.pre_split_fg, 't_stock_fg':self.t_stock_fg, 'current_fg_marking':self.current_fg_marking}
             collected_info = []
-            collected_info.append(self.target_lotNumber)
+
             if self.dcc_column != "no dcc":
+                collected_info.append(self.target_lotNumber)
                 collected_info.append(self.target_DccNumber)
+            else:
+                collected_info.append(target_lot)
+
             for info in inspect_item_list:
                  collected_info.append(info_dic[info])
             self.emes_df.loc[len(self.emes_df)] = collected_info
