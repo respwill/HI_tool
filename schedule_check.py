@@ -114,22 +114,22 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
         else:
             print("please use '/' or '-' to divide country code and local code in shipping code in CES file")
 
+        trim_emes_df = str(emes_df).replace(' ','')
+
         if str(ces_df)[:1] == "0":
-            if str(emes_df) == str(ces_df)[1:checker] + "-" + str(ces_df)[checker + 1:checker + 2]:
+            if trim_emes_df == str(ces_df)[1:checker] + "-" + str(ces_df)[checker + 1:]:
                 return "OK"
             elif emes_df == "wrong lot#":
                 return "wrong lot#"
             else:
-                return str(emes_df) + " change it to " + str(ces_df)[1:checker] + "-" + str(ces_df)[
-                                                                                        checker + 1:checker + 2]
+                return trim_emes_df + " change it to " + str(ces_df)[1:checker] + "-" + str(ces_df)[checker + 1:]
         else:
-            if str(emes_df) == str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:checker + 2]:
+            if trim_emes_df == str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:]:
                 return "OK"
             elif emes_df == "wrong lot#":
                 return "wrong lot#"
             else:
-                return str(emes_df) + " change it to " + str(ces_df)[:checker] + "-" + str(ces_df)[
-                                                                                       checker + 1:checker + 2]
+                return trim_emes_df + " change it to " + str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:]
 
     # Compare emes and target excel file.
     def comparing(self,type):
