@@ -155,6 +155,8 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
                         self.result_df[column_name][n] = self.compare(emes_df=self.EMES_df[column_name][n], ces_df=self.CES_df[column_name][n])
                 elif check_column_name.find("device") != -1:
                     pass
+                elif check_column_name.find("dcc") != -1:
+                    pass
                 elif check_column_name.find("lot") != -1:
                     pass
                 else:
