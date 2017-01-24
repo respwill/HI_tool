@@ -61,8 +61,6 @@ class parser():
         self.tracking_url = "http://aak1ws01/eMES/sch/historyTestInfo.do?factoryID=1&Lot=" + str(self.target_lotNumber) + "&Dcc=" + str(self.target_DccNumber) + "&dest=TEST"
         self.driver.get(self.tracking_url)
 
-
-
     # tracking each lot number and crawling information from it.
     def collecting(self,target_lot):
         self.tracking_lot(target_lot)
@@ -114,6 +112,7 @@ class parser():
         self.current_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[6].text
         # self.previous_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[8]
         self.pre_split_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[10].text
+        self.pre_split_pin = self.pre_split_pin.replace(self.current_pin,'')
         self.t_stock_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[12].text
 
         # self.previous_fg =""
