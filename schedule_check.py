@@ -72,6 +72,8 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
                 return "wrong lot#"
             else:
                 return str(emes_df)[1:11] + " change it to " + str(ces_df)
+        elif str(ces_df) == "No Bin2 split":
+            return ""
         else:
             if str(emes_df)[1:11] == str(ces_df)[0:10]:
                 return "OK"
