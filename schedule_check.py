@@ -59,8 +59,10 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
             return "OK"
         elif emes_df == "" or emes_df == "/":
             return ""
-        elif emes_df == "wrong lot#":
-            return "wrong lot#"
+        elif emes_df == "Pre-schedule didn't performed":
+            return "Pre-schedule didn't performed"
+        elif emes_df == "lot doesn't exist":
+            return "lot doesn't exist"
         else:
             return emes_df + " change it to " + str(ces_df)
 
@@ -68,8 +70,10 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
         if len(str(ces_df)) == 10:
             if str(emes_df)[1:11] == str(ces_df):
                 return "OK"
-            elif emes_df == "wrong lot#":
-                return "wrong lot#"
+            elif emes_df == "Pre-schedule didn't performed":
+                return "Pre-schedule didn't performed"
+            elif emes_df == "lot doesn't exist":
+                return "lot doesn't exist"
             else:
                 return str(emes_df)[1:11] + " change it to " + str(ces_df)
         elif str(ces_df) == "No Bin2 split":
@@ -77,8 +81,10 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
         else:
             if str(emes_df)[1:11] == str(ces_df)[0:10]:
                 return "OK"
-            elif emes_df == "wrong lot#":
-                return "wrong lot#"
+            elif emes_df == "Pre-schedule didn't performed":
+                return "Pre-schedule didn't performed"
+            elif emes_df == "lot doesn't exist":
+                return "lot doesn't exist"
             else:
                 return str(emes_df)[1:11] + " change it to " + str(ces_df)[0:10]
 

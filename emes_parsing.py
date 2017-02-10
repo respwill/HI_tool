@@ -64,19 +64,22 @@ class parser():
     # tracking each lot number and crawling information from it.
     def collecting(self,target_lot):
         self.tracking_lot(target_lot)
+        # to interact with alert. it works for Chrome driver, but not with PhantomJS.
         try:
             alert = self.driver.switch_to.alert
             print(alert.text)
             alert.accept()
+            self.driver.close()
+            return 0
         except:
             pass
         #if lot is incorrect or lot number has changed, alert shows up. needs to handle it.
-
         error_message = self.driver.find_element_by_css_selector('body').text
         error_text = "Error 500: java.lang.ClassCastException: com.amkor.emes.struts.forms.sch.WipHistoryTrackingTestInfoForm incompatible with com.amkor.emes.struts.forms.sch.WipHistoryTrackingForm"
         if error_message == error_text:
             self.ship_code = self.drop_flag = self.test_PO = self.custInfo = self.dateCode = self.coo = self.traceCode = self.scheduleType = self.testFloor = "wrong lot#"
             print(str(self.target_lotNumber) + " / " + str(self.target_DccNumber), "doesn't exist")
+            self.driver.close()
             return 0
         else:
             pass
@@ -91,8 +94,26 @@ class parser():
         self.assy_device = self.device[0].text
         self.test_device = self.device[1].text
 
-        # get extra information
+        # when lot exist in Assy site, but not scheduled, len of point is not 95 (tested on ALPS schedule)
         self.point = self.driver.find_elements_by_css_selector("table > tbody > tr > td > font")
+        if len(self.point) != 95:
+            self.ship_code = "Pre-schedule didn't performed"
+            self.drop_flag = "Pre-schedule didn't performed"
+            self.test_PO = "Pre-schedule didn't performed"
+            self.custInfo = "Pre-schedule didn't performed"
+            self.dateCode = "Pre-schedule didn't performed"
+            self.coo = "Pre-schedule didn't performed"
+            self.traceCode = "Pre-schedule didn't performed"
+            self.scheduleType = "Pre-schedule didn't performed"
+            self.testFloor = "Pre-schedule didn't performed"
+            self.current_fg = "Pre-schedule didn't performed"
+            self.current_fg_marking = "Pre-schedule didn't performed"
+            self.pre_split_fg = "Pre-schedule didn't performed"
+            self.t_stock_fg = "Pre-schedule didn't performed"
+            return 0
+        else:
+            pass
+        # get extra information
         self.ship_code = (self.point[23].text)[0:4]
         self.drop_flag = (self.point[23].text)[6:]
         self.test_PO = self.point[38].text
@@ -108,7 +129,25 @@ class parser():
         pin_list = self.driver.find_element_by_partial_link_text("Sub Pin Info")
         pin_list.click()
 
-        self.driver.switch_to.window(self.driver.window_handles[1])
+        # Since phantomJS can't support alert eccept.. handle exception when window moving happenes.
+        try:
+            self.driver.switch_to.window(self.driver.window_handles[1])
+        except:
+            self.ship_code = "lot doesn't exist"
+            self.drop_flag = "lot doesn't exist"
+            self.test_PO = "lot doesn't exist"
+            self.custInfo = "lot doesn't exist"
+            self.dateCode = "lot doesn't exist"
+            self.coo = "lot doesn't exist"
+            self.traceCode = "lot doesn't exist"
+            self.scheduleType = "lot doesn't exist"
+            self.testFloor = "lot doesn't exist"
+            self.current_fg = "lot doesn't exist"
+            self.current_fg_marking = "lot doesn't exist"
+            self.pre_split_fg = "lot doesn't exist"
+            self.t_stock_fg = "lot doesn't exist"
+            return 0
+
         self.current_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[6].text
         # self.previous_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[8]
         self.pre_split_pin = self.driver.find_elements_by_css_selector("tbody > tr > td")[10].text
