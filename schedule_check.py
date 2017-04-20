@@ -63,7 +63,10 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
             if emes_df == str(int(ces_df)):
                 return "OK"
             elif emes_df == "" or emes_df == "/":
-                return ""
+                if ces_df == "":
+                    return ""
+                else:
+                    return emes_df + " change it to " + str(int(ces_df))
             elif emes_df == "Pre-schedule didn't performed":
                 return "Pre-schedule didn't performed"
             elif emes_df == "lot doesn't exist":
@@ -74,7 +77,10 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
             if emes_df == str(ces_df):
                 return "OK"
             elif emes_df == "" or emes_df == "/":
-                return ""
+                if ces_df == "":
+                    return ""
+                else:
+                    return emes_df + " change it to " + str(int(ces_df))
             elif emes_df == "Pre-schedule didn't performed":
                 return "Pre-schedule didn't performed"
             elif emes_df == "lot doesn't exist":
@@ -171,7 +177,6 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
                     else:
                         return trim_emes_df + " change it to " + str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:]
             else:
-                print(ces_df)
                 print("please use '/' or '-' to divide country code and local code in shipping code in CES file")
 
     # Compare emes and target excel file.
