@@ -5,6 +5,7 @@ import sys
 sys.path.append("D:\Python")
 import pandas as pd
 import numpy
+import math
 from HI_tool import CES_read, emes_parsing
 import os
 
@@ -63,7 +64,7 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
             if emes_df == str(int(ces_df)):
                 return "OK"
             elif emes_df == "" or emes_df == "/":
-                if ces_df == "":
+                if ces_df == "" or math.isnan(ces_df) == True:
                     return ""
                 else:
                     return emes_df + " change it to " + str(int(ces_df))
@@ -77,7 +78,7 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
             if emes_df == str(ces_df):
                 return "OK"
             elif emes_df == "" or emes_df == "/":
-                if ces_df == "":
+                if ces_df == "" or math.isnan(ces_df) == True :
                     return ""
                 else:
                     return emes_df + " change it to " + str(int(ces_df))
