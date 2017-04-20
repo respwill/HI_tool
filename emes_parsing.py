@@ -77,7 +77,7 @@ class parser():
         error_message = self.driver.find_element_by_css_selector('body').text
         error_text = "Error 500: java.lang.ClassCastException: com.amkor.emes.struts.forms.sch.WipHistoryTrackingTestInfoForm incompatible with com.amkor.emes.struts.forms.sch.WipHistoryTrackingForm"
         if error_message == error_text:
-            self.ship_code = self.drop_flag = self.test_PO = self.custInfo = self.dateCode = self.coo = self.traceCode = self.scheduleType = self.testFloor = "wrong lot#"
+            self.ship_code = self.drop_flag = self.test_PO = self.custInfo = self.dateCode = self.coo = self.traceCode = self.scheduleType = self.testFloor = self.probe_flag ="wrong lot#"
             print(str(self.target_lotNumber) + " / " + str(self.target_DccNumber), "doesn't exist")
             self.driver.close()
             return 0
@@ -114,8 +114,12 @@ class parser():
         else:
             pass
         # get extra information
-        self.ship_code = (self.point[23].text)[0:4]
-        self.drop_flag = (self.point[23].text)[6:]
+        ship_info = self.point[23].text
+        first_ship_divider = ship_info.find("/")
+        second_ship_divider = ship_info.find("/", first_ship_divider+1)
+        self.ship_code = (self.point[23].text)[:first_ship_divider].strip()
+        self.drop_flag = (self.point[23].text)[first_ship_divider+1:second_ship_divider].strip()
+        self.probe_flag = (self.point[23].text)[second_ship_divider+1:].strip()
         self.test_PO = self.point[38].text
         self.custInfo = self.point[40].text
         self.dateCode = self.point[42].text
@@ -184,10 +188,10 @@ class parser():
     def get_info(self,inspect_item_list):
         for target_lot in self.lot_list:
             self.collecting(target_lot)
-            info_dic = {'assy_device':self.assy_device, 'test_device':self.test_device, 'ship_code':self.ship_code,'drop_flag':self.drop_flag,
+            info_dic = {'assy_device':self.assy_device, 'test_device':self.test_device, 'ship_code':self.ship_code,'drop_flag':self.drop_flag, 'probe_flag':self.probe_flag,
                         'test_po':self.test_PO, 'cust_info':self.custInfo, 'date_code':self.dateCode, 'coo':self.coo, 'trace_code':self.traceCode,
                         'schedule_type':self.scheduleType, 'test_floor':self.testFloor,
-                        'current_fg':self.current_fg, 'pre_split_fg':self.pre_split_fg, 't_stock_fg':self.t_stock_fg, 'current_fg_marking':self.current_fg_marking}
+                        'current_fg':self.current_fg, 'pre_split_fg':self.pre_split_fg, 't_stock_fg':self.t_stock_fg, 'current_fg_marking':self.current_fg_marking,}
             collected_info = []
 
             if self.dcc_column != "no dcc":

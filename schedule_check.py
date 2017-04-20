@@ -4,6 +4,7 @@
 import sys
 sys.path.append("D:\Python")
 import pandas as pd
+import numpy
 from HI_tool import CES_read, emes_parsing
 import os
 
@@ -12,7 +13,7 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
     #lot_column, device_column, po_column, datecode_column, tracecode_column, coo_column, el_fg_column, be_fg_column, ship_column
     def __init__(self, book, sheet, lot_column, dcc_column="no dcc", device_column="optional",  po_column="optional", datecode_column="optional",custInfo_column="optional",
                  tracecode_column="optional", coo_column="optional", ship_column="optional", current_fg_column="optional", pre_split_fg_column="optional",
-                 tstock_fg_column="optional", marking_spec_column="optional"):
+                 tstock_fg_column="optional", marking_spec_column="optional", dropFlag_column="optional", probeFlag_column="optional"):
         # set excel information include column names.
         self.current_dir = os.getcwd()
         self.book = book
@@ -30,11 +31,13 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
         self.tstock_fg_column = tstock_fg_column
         self.ship_column = ship_column
         self.marking_spec_column = marking_spec_column
+        self.drop_flag_column = dropFlag_column
+        self.probe_flag_column = probeFlag_column
 
         # procedure for set columns list for DataFrame.
         # If input is blank, it will be ignored.
         collection = []
-        collection = lot_column, dcc_column, device_column, po_column, datecode_column, custInfo_column, tracecode_column, coo_column, ship_column, current_fg_column, pre_split_fg_column, tstock_fg_column, marking_spec_column
+        collection = lot_column, dcc_column, device_column, po_column, datecode_column, custInfo_column, tracecode_column, coo_column, ship_column, current_fg_column, pre_split_fg_column, tstock_fg_column, marking_spec_column, dropFlag_column, probeFlag_column
         self.sorted_collection = []
         for column in collection:
             if column == "optional" or column == "no dcc":
@@ -55,16 +58,29 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
     # collecting target lot number from CES file and append to data frame and data base..
     # ces_df's information is right one.
     def compare(self, emes_df, ces_df):
-        if emes_df == str(ces_df):
-            return "OK"
-        elif emes_df == "" or emes_df == "/":
-            return ""
-        elif emes_df == "Pre-schedule didn't performed":
-            return "Pre-schedule didn't performed"
-        elif emes_df == "lot doesn't exist":
-            return "lot doesn't exist"
+        if type(ces_df) == numpy.float64:
+            print(ces_df)
+            if emes_df == str(int(ces_df)):
+                return "OK"
+            elif emes_df == "" or emes_df == "/":
+                return ""
+            elif emes_df == "Pre-schedule didn't performed":
+                return "Pre-schedule didn't performed"
+            elif emes_df == "lot doesn't exist":
+                return "lot doesn't exist"
+            else:
+                return emes_df + " change it to " + str(int(ces_df))
         else:
-            return emes_df + " change it to " + str(ces_df)
+            if emes_df == str(ces_df):
+                return "OK"
+            elif emes_df == "" or emes_df == "/":
+                return ""
+            elif emes_df == "Pre-schedule didn't performed":
+                return "Pre-schedule didn't performed"
+            elif emes_df == "lot doesn't exist":
+                return "lot doesn't exist"
+            else:
+                return emes_df + " change it to " + str(ces_df)
 
     def fgCompare(self, emes_df, ces_df):
         if len(str(ces_df)) == 10:
@@ -115,29 +131,48 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
 
     def shipCompare(self, emes_df, ces_df):
         # devider in emes is '-'
-        if ces_df.find("/") != -1:
-            checker = ces_df.find("/")
-        elif ces_df.find("-") != -1:
-            checker = ces_df.find("-")
+        if type(ces_df) == float:
+            return ""
         else:
-            print("please use '/' or '-' to divide country code and local code in shipping code in CES file")
-
-        trim_emes_df = str(emes_df).replace(' ','')
-
-        if str(ces_df)[:1] == "0":
-            if trim_emes_df == str(ces_df)[1:checker] + "-" + str(ces_df)[checker + 1:]:
-                return "OK"
-            elif emes_df == "wrong lot#":
-                return "wrong lot#"
+            if ces_df.find("/") != -1:
+                checker = ces_df.find("/")
+                trim_emes_df = str(emes_df).replace(' ', '')
+                if str(ces_df)[:1] == "0":
+                    if trim_emes_df == str(ces_df)[1:checker] + "-" + str(ces_df)[checker + 1:]:
+                        return "OK"
+                    elif emes_df == "wrong lot#":
+                        return "wrong lot#"
+                    else:
+                        return trim_emes_df + " change it to " + str(ces_df)[1:checker] + "-" + str(ces_df)[
+                                                                                                checker + 1:]
+                else:
+                    if trim_emes_df == str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:]:
+                        return "OK"
+                    elif emes_df == "wrong lot#":
+                        return "wrong lot#"
+                    else:
+                        return trim_emes_df + " change it to " + str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:]
+            elif ces_df.find("-") != -1:
+                checker = ces_df.find("-")
+                trim_emes_df = str(emes_df).replace(' ', '')
+                if str(ces_df)[:1] == "0":
+                    if trim_emes_df == str(ces_df)[1:checker] + "-" + str(ces_df)[checker + 1:]:
+                        return "OK"
+                    elif emes_df == "wrong lot#":
+                        return "wrong lot#"
+                    else:
+                        return trim_emes_df + " change it to " + str(ces_df)[1:checker] + "-" + str(ces_df)[
+                                                                                                checker + 1:]
+                else:
+                    if trim_emes_df == str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:]:
+                        return "OK"
+                    elif emes_df == "wrong lot#":
+                        return "wrong lot#"
+                    else:
+                        return trim_emes_df + " change it to " + str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:]
             else:
-                return trim_emes_df + " change it to " + str(ces_df)[1:checker] + "-" + str(ces_df)[checker + 1:]
-        else:
-            if trim_emes_df == str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:]:
-                return "OK"
-            elif emes_df == "wrong lot#":
-                return "wrong lot#"
-            else:
-                return trim_emes_df + " change it to " + str(ces_df)[:checker] + "-" + str(ces_df)[checker + 1:]
+                print(ces_df)
+                print("please use '/' or '-' to divide country code and local code in shipping code in CES file")
 
     # Compare emes and target excel file.
     def comparing(self,type):
