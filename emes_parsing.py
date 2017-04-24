@@ -99,6 +99,7 @@ class parser():
         if len(self.point) != 95:
             self.ship_code = "Pre-schedule didn't performed"
             self.drop_flag = "Pre-schedule didn't performed"
+            self.probe_flag = "Pre-schedule didn't performed"
             self.test_PO = "Pre-schedule didn't performed"
             self.custInfo = "Pre-schedule didn't performed"
             self.dateCode = "Pre-schedule didn't performed"
@@ -139,6 +140,7 @@ class parser():
         except:
             self.ship_code = "lot doesn't exist"
             self.drop_flag = "lot doesn't exist"
+            self.probe_flag = "lot doesn't exist"
             self.test_PO = "lot doesn't exist"
             self.custInfo = "lot doesn't exist"
             self.dateCode = "lot doesn't exist"

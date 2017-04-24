@@ -27,7 +27,7 @@ class CES_reader():
                 continue
             elif self.CES_df[self.lot_column].loc[n] == self.lot_column:
                 continue
-            elif self.CES_df[self.lot_column].loc[n].find("복사") != -1:
+            elif str(self.CES_df[self.lot_column].loc[n]).find("복사") != -1:
                 continue
             else:
                 if self.dcc_column in self.CES_df:
