@@ -78,8 +78,13 @@ class sch_check(emes_parsing.parser, CES_read.CES_reader):
             if emes_df == str(ces_df):
                 return "OK"
             elif emes_df == "" or emes_df == "/":
-                if ces_df == "" or math.isnan(ces_df) == True :
+                if ces_df == "":
                     return ""
+                elif type(ces_df) == float:
+                    if math.isnan(ces_df) == True:
+                       return ""
+                elif ces_df =="No marking":
+                    return "No marking"
                 else:
                     return emes_df + " change it to " + str(int(ces_df))
             elif emes_df == "Pre-schedule didn't performed":
